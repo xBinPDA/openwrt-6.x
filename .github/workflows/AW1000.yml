@@ -4,7 +4,7 @@ on: workflow_dispatch
 
 jobs:
     build:
-        name: Prepare and build IPQ807x NSS generic images
+        name: BUILD IMMO AW1000-NSS
         runs-on: self-hosted
 
         steps:
@@ -21,7 +21,7 @@ jobs:
                 mv .AW1000 .config
 
             - name: Download package sources
-              run: make download V=s
+              run: make download -j8
 
             - name: Build tools
               run: |
@@ -35,7 +35,7 @@ jobs:
 
             - name: Build target images
               run: |
-                make -j$(nproc) V=s || \
+                make -j$(nproc) || \
                 make V=s
 
             - name: Get the current date
