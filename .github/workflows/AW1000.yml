@@ -3,51 +3,50 @@ name: AW1000
 on: workflow_dispatch
 
 jobs:
-    build:
-        name: BUILD IMMO AW1000-NSS
-        runs-on: self-hosted
+  build:
+    name: BUILD IMMO AW1000-NSS
+    runs-on: self-hosted
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Update and install feeds
-              run: |
-                ./scripts/feeds update -a
-                ./scripts/feeds install -a
+      - name: Update and install feeds
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
-            - name: Import full config for IPQ807x NSS Generic
-              run: |
-                mv .AW1000 .config
+      - name: Import full config for IPQ807x NSS Generic
+        run: |
+          mv .AW1000 .config
 
-            - name: Download package sources
-              run: make download -j8
+      - name: Defconfig and Download package sources
+        run: |
+          make defconfig && \
+          make download -j8
 
-            - name: Build tools
-              run: |
-                make tools/install -j$(nproc) V=s || \
-                make tools/install V=s
+      - name: Build tools
+        run: |
+          make tools/install -j$(nproc) V=s
 
-            - name: Build toolchain
-              run: |
-                make toolchain/install -j$(nproc) V=s || \
-                make toolchain/install V=s
+      - name: Build toolchain
+        run: |
+          make toolchain/install -j$(nproc) V=s
 
-            - name: Build target images
-              run: |
-                make -j$(nproc) || \
-                make V=s
+      - name: Build target images
+        run: |
+          make -j$(nproc) || make -j$(nproc) V=s
 
-            - name: Get the current date
-              run: echo "NOW=$(date +%F-%H%M)" >> $GITHUB_ENV
+      - name: Get the current date
+        run: echo "NOW=$(date +%F-%H%M)" >> $GITHUB_ENV
 
-            - name: Create a release
-              uses: "ncipollo/release-action@v1"
-              with:
-                name: "Updated prebuilt images (NSS-WiFi) ${{ env.NOW }}"
-                commit: "k6.12-nss"
-                tag: "ipq807x-nsswifi-${{ env.NOW }}"
-                generateReleaseNotes: true
-                makeLatest: true
-                artifacts: bin/targets/qualcommax/ipq807x/*
-                token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Create a release
+        uses: "ncipollo/release-action@v1"
+        with:
+          name: "Updated prebuilt images (NSS-WiFi) ${{ env.NOW }}"
+          commit: "k6.12-nss"
+          tag: "ipq807x-nsswifi-${{ env.NOW }}"
+          generateReleaseNotes: true
+          makeLatest: true
+          artifacts: bin/targets/qualcommax/ipq807x/*
+          token: "${{ secrets.GITHUB_TOKEN }}"
